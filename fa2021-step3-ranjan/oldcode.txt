@@ -1,0 +1,76 @@
+switch (cond.getType()){
+			case FLOAT:
+			switch (cond.getOp()){
+				case EQ:
+					Instruction feq = new Feq(cond.getLeft(),cond.getRight(),floatTemp);
+					il.add(feq);
+					Instruction beq = new Beq(floatTemp,intTemp,out_label.toString());
+					il.add(beq);
+					break;
+				case NE:
+					Instruction fneq = new Feq(cond.getRight(),cond.getLeft(),floatTemp);
+					il.add(fneq);
+					Instruction bne = new Bne(floatTemp,intTemp,out_label.toString());
+					il.add(bne);
+					break;	
+				case LT:
+					Instruction flt = new Flt(cond.getLeft(),cond.getRight(),floatTemp);
+					il.add(flt);
+					Instruction blt = new Blt(floatTemp,intTemp,out_label.toString());
+					il.add(blt);
+					break;
+				case LE:
+					Instruction fle = new Fle(cond.getLeft(),cond.getRight(),floatTemp);
+					il.add(fle);
+					Instruction ble = new Ble(floatTemp,intTemp,out_label.toString());
+					il.add(ble);
+					break;
+				case GT:
+					Instruction fgt = new Flt(cond.getRight(),cond.getLeft(),floatTemp);
+					il.add(fgt);
+					Instruction bgt = new Bgt(floatTemp,intTemp,out_label.toString());
+					il.add(bgt);
+					break;
+				case GE:
+					Instruction fge = new Fle(cond.getRight(),cond.getLeft(),floatTemp);
+					il.add(fge);
+					Instruction bge = new Bge(floatTemp,intTemp,out_label.toString());
+					il.add(bge);
+					break;
+				default:
+					throw new Error("Branch must be of the type: EQ,NE,LT,LE,GT,GE");
+			}
+			break;
+			case INT:
+			switch (cond.getOp()){
+				case EQ:
+					Instruction beq = new Beq(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(beq);
+					break;
+				case NE:
+					Instruction bne = new Bne(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(bne);
+					break;	
+				case LT:
+					Instruction blt = new Blt(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(blt);
+					break;
+				case LE:
+					Instruction ble = new Ble(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(ble);
+					break;
+				case GT:
+					Instruction bgt = new Bgt(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(bgt);
+					break;
+				case GE:
+					Instruction bge = new Bge(cond.getLeft(),cond.getRight(),out_label.toString());
+					il.add(bge);
+					break;
+				default:
+					throw new Error("Branch must be of the type: EQ,NE,LT,LE,GT,GE");
+			}
+			break;
+			default:
+				throw new Error("Cond must be of type Int or Float!");
+		}

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+java -cp "$CLASSPATH:classes" Compiler $1 > $2
+

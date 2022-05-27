@@ -1,0 +1,263 @@
+Function main
+	Statement list:
+		Write: 
+			VarNode: welcome
+		Write: 
+			VarNode: xprompt
+		Read: 
+			VarNode: x
+		Write: 
+			VarNode: yprompt
+		Read: 
+			VarNode: y
+		While: 
+			Cond: NE
+				VarNode: x
+				IntLitNode: 0
+			Statement list:
+				If 
+					Cond: LE
+						VarNode: x
+						VarNode: y
+					Statement list:
+						AssignNode:
+							VarNode: tmp
+							VarNode: x
+						AssignNode:
+							VarNode: x
+							VarNode: y
+						AssignNode:
+							VarNode: y
+							VarNode: tmp
+					Statement list:
+				While: 
+					Cond: GE
+						VarNode: x
+						VarNode: y
+					Statement list:
+						AssignNode:
+							VarNode: x
+							BinaryOpNode: SUB
+								VarNode: x
+								VarNode: y
+				Write: 
+					VarNode: x
+				Write: 
+					VarNode: y
+		Write: 
+			VarNode: result
+		Write: 
+			VarNode: y
+		Return: 
+			IntLitNode: 0
+.section .text
+;Current temp: null
+;IR Code: 
+MV fp, sp
+JR func_main
+HALT
+;
+func_main:
+SW fp, 0(sp)
+MV fp, sp
+ADDI sp, sp, -4
+ADDI sp, sp, 0
+SW t1, 0(sp)
+ADDI sp, sp, -4
+SW t2, 0(sp)
+ADDI sp, sp, -4
+SW t3, 0(sp)
+ADDI sp, sp, -4
+SW t4, 0(sp)
+ADDI sp, sp, -4
+SW t5, 0(sp)
+ADDI sp, sp, -4
+SW t6, 0(sp)
+ADDI sp, sp, -4
+SW t7, 0(sp)
+ADDI sp, sp, -4
+SW t8, 0(sp)
+ADDI sp, sp, -4
+SW t9, 0(sp)
+ADDI sp, sp, -4
+SW t10, 0(sp)
+ADDI sp, sp, -4
+SW t11, 0(sp)
+ADDI sp, sp, -4
+SW t12, 0(sp)
+ADDI sp, sp, -4
+SW t13, 0(sp)
+ADDI sp, sp, -4
+SW t14, 0(sp)
+ADDI sp, sp, -4
+SW t15, 0(sp)
+ADDI sp, sp, -4
+SW t16, 0(sp)
+ADDI sp, sp, -4
+SW t17, 0(sp)
+ADDI sp, sp, -4
+SW t18, 0(sp)
+ADDI sp, sp, -4
+SW t19, 0(sp)
+ADDI sp, sp, -4
+SW t20, 0(sp)
+ADDI sp, sp, -4
+SW t21, 0(sp)
+ADDI sp, sp, -4
+SW t22, 0(sp)
+ADDI sp, sp, -4
+SW t23, 0(sp)
+ADDI sp, sp, -4
+SW t24, 0(sp)
+ADDI sp, sp, -4
+SW t25, 0(sp)
+ADDI sp, sp, -4
+SW t26, 0(sp)
+ADDI sp, sp, -4
+SW t27, 0(sp)
+ADDI sp, sp, -4
+SW t28, 0(sp)
+ADDI sp, sp, -4
+SW t29, 0(sp)
+ADDI sp, sp, -4
+SW t30, 0(sp)
+ADDI sp, sp, -4
+SW t31, 0(sp)
+ADDI sp, sp, -4
+FSW f1, 0(sp)
+ADDI sp, sp, -4
+FSW f2, 0(sp)
+ADDI sp, sp, -4
+PUTS $gwelcome
+PUTS $gxprompt
+GETI $gx
+LA $t2, 0x20000000
+SW $gx, 0($t2)
+PUTS $gyprompt
+GETI $gy
+LA $t3, 0x20000004
+SW $gy, 0($t3)
+loop_2:
+LA $t5, 0x20000000
+LW $t6, 0($t5)
+LI $t4, 0
+BEQ $t6, $t4, out_3
+LA $t7, 0x20000000
+LW $t9, 0($t7)
+LA $t10, 0x20000004
+LW $t11, 0($t10)
+BGT $t9, $t11, else_1
+LA $t12, 0x2000000c
+SW $t12, 0($t12)
+LA $t14, 0x20000000
+SW $t14, 0($t14)
+LA $t16, 0x20000004
+SW $t16, 0($t16)
+J out_1
+else_1:
+out_1:
+loop_1:
+LA $t19, 0x20000000
+LW $t20, 0($t19)
+LA $t21, 0x20000004
+LW $t22, 0($t21)
+BLT $t20, $t22, out_2
+LA $t28, 0x20000000
+LA $t23, 0x20000000
+LW $t24, 0($t23)
+LA $t23, 0x20000000
+LW $t24, 0($t23)
+LA $t25, 0x20000004
+LW $t26, 0($t25)
+SUB $t27, $t24, $t26
+SW $t27, 0($t28)
+J loop_1
+out_2:
+PUTI $gx
+PUTI $gy
+J loop_2
+out_3:
+PUTS $gresult
+PUTI $gy
+LI $t31, 0
+SW $t31, 8(fp)
+J func_ret_main
+func_ret_main:
+ADDI sp, sp, 4
+FLW f2, 0(sp)
+ADDI sp, sp, 4
+FLW f1, 0(sp)
+ADDI sp, sp, 4
+LW t31, 0(sp)
+ADDI sp, sp, 4
+LW t30, 0(sp)
+ADDI sp, sp, 4
+LW t29, 0(sp)
+ADDI sp, sp, 4
+LW t28, 0(sp)
+ADDI sp, sp, 4
+LW t27, 0(sp)
+ADDI sp, sp, 4
+LW t26, 0(sp)
+ADDI sp, sp, 4
+LW t25, 0(sp)
+ADDI sp, sp, 4
+LW t24, 0(sp)
+ADDI sp, sp, 4
+LW t23, 0(sp)
+ADDI sp, sp, 4
+LW t22, 0(sp)
+ADDI sp, sp, 4
+LW t21, 0(sp)
+ADDI sp, sp, 4
+LW t20, 0(sp)
+ADDI sp, sp, 4
+LW t19, 0(sp)
+ADDI sp, sp, 4
+LW t18, 0(sp)
+ADDI sp, sp, 4
+LW t17, 0(sp)
+ADDI sp, sp, 4
+LW t16, 0(sp)
+ADDI sp, sp, 4
+LW t15, 0(sp)
+ADDI sp, sp, 4
+LW t14, 0(sp)
+ADDI sp, sp, 4
+LW t13, 0(sp)
+ADDI sp, sp, 4
+LW t12, 0(sp)
+ADDI sp, sp, 4
+LW t11, 0(sp)
+ADDI sp, sp, 4
+LW t10, 0(sp)
+ADDI sp, sp, 4
+LW t9, 0(sp)
+ADDI sp, sp, 4
+LW t8, 0(sp)
+ADDI sp, sp, 4
+LW t7, 0(sp)
+ADDI sp, sp, 4
+LW t6, 0(sp)
+ADDI sp, sp, 4
+LW t5, 0(sp)
+ADDI sp, sp, 4
+LW t4, 0(sp)
+ADDI sp, sp, 4
+LW t3, 0(sp)
+ADDI sp, sp, 4
+LW t2, 0(sp)
+ADDI sp, sp, 4
+LW t1, 0(sp)
+MV sp, fp
+LW fp, 0(fp)
+RET
+;
+
+
+.section .strings
+0x10000000 "Compute GCD(x, y) using Euclid's algorithm \n"
+0x10000004 "Enter x: "
+0x10000008 "Enter y: "
+0x1000000c "GCD(x, y) = "
+0x10000010 "Enter a number: "

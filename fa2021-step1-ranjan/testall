@@ -1,0 +1,22 @@
+#! /bin/bash
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-20s [%s%s%s]\n' "$2" "$COLOR" "$MESG" "$RESET"
+}
+
+for t in tests/*.uC; do
+	./runme "$t" out
+	diff outputs/$(echo "$t" | sed -E 's|tests/(.*)\.uC|\1\.out|') out > /dev/null
+	status $? "$t"
+done

@@ -1,0 +1,66 @@
+#! /bin/bash
+
+if [[ "$RISCSIM" = "" ]]; then
+	RISCSIM=~/RiscSim/driver.py
+fi
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+BOLD="$(tput bold)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-20s [%s%s%s]  %s%s%s\n' "$2" "$COLOR" "$MESG" "$RESET" "$BOLD" "$3" "$RESET"
+}
+
+function simulate {
+	python3 "$RISCSIM" "$1" | head -n -1 > "$2"
+}
+
+echo -e "${BOLD}Test                 Status  Input${RESET}"
+for t in tests/*.uC; do
+	./runme "$t" out
+	asm=$(echo "$t" | sed -E 's|tests/(.*)\.uC|outputs/\1\.asm|')
+	case "$(echo "$t" | egrep -o 'test[0-9]+')" in
+	"test2" | "test6" | "test10")
+		NUM=$(($RANDOM % 100))
+		RANDIN="$NUM"
+		echo -e "$NUM\n" | simulate "$asm" rstest
+		echo -e "$NUM\n" | simulate out rsout
+		;;
+	"test7" | "test8")
+		NUM1=$(($RANDOM % 100))
+		NUM2=$(($RANDOM % 100))
+		RANDIN="$NUM1 $NUM2"
+		echo -e "$NUM1\n$NUM2\n" | simulate "$asm" rstest
+		echo -e "$NUM1\n$NUM2\n" | simulate out rsout
+		;;
+	"test3")
+		NUM1=$(($RANDOM % 100))
+		NUM2=$(($RANDOM % 100))
+		NUM3=$(($RANDOM % 100))
+		RANDIN="$NUM1 $NUM2 $NUM3"
+		echo -e "$NUM1\n$NUM2\n$NUM3\n" | simulate "$asm" rstest
+		echo -e "$NUM1\n$NUM2\n$NUM3\n" | simulate out rsout
+		;;
+	*)
+		RANDIN=""
+		simulate "$asm" rstest
+		simulate out rsout
+	;;
+	esac
+	diff rstest rsout > /dev/null
+	status $? "$t" "$RANDIN"
+done
+
+echo "${BOLD}NOTE: tests 2, 3, 6, 7, 8, and 10 take arbitrary input."
+echo "This script just picks random numbers.  You should test these"
+echo "more yourself!"
+echo -n "$RESET"

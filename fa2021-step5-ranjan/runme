@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ "$3" = "" ]]; then
+	echo "ERROR: please specify number of registers"
+	exit 1
+fi
+
+java -cp "$CLASSPATH:classes" compiler.Compiler $1 > $2 $3
+

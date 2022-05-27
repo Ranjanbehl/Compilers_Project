@@ -1,0 +1,102 @@
+#! /bin/bash
+
+TYPECHECK=0
+if [[ "$1" = "typecheck" ]]; then
+	TYPECHECK=1
+fi
+
+if [[ "$RISCSIM" = "" ]]; then
+	RISCSIM=~/RiscSim/driver.py
+fi
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+BOLD="$(tput bold)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-25s [%s%s%s]  %s%s%s\n' "$2" "$COLOR" "$MESG" "$RESET" "$BOLD" "$3" "$RESET"
+}
+
+function simulate {
+	python3 "$RISCSIM" "$1" 2>/dev/null | head -n -1 > "$2"
+}
+
+function randint {
+	echo "$((RANDOM % 100))"
+}
+
+function randfloat {
+	echo "$((RANDOM % 100)).$((RANDOM % 100))"
+}
+
+echo -e "${BOLD}Test                      Status  Input${RESET}"
+for t in tests/*.uC; do
+	./runme "$t" out
+	asm=$(echo "$t" | sed -E 's|tests/(.*)\.uC|outputs/\1\.asm|')
+	case "$(echo "$t" | egrep -o 'test[0-9]+')" in
+	"test3")
+		NUM=$(randint)
+		INPUT="$NUM\n"
+		RANDIN="$NUM"
+		;;
+	"test1")
+		NUM1=$(randint)
+		NUM2=$(randint)
+		INPUT="$NUM1\n$NUM2\n"
+		RANDIN="$NUM1 $NUM2"
+		;;
+	"test4" | "test5")
+		NUM1=$(randfloat)
+		NUM2=$(($RANDOM % 7))
+		NUM3=$(randfloat)
+		INPUT="$NUM1\n$NUM2\n$NUM3\n"
+		for i in $(seq 1 1 $NUM2); do
+			f=$(randfloat)
+			NUM3="${NUM3} $f"
+			INTPUT="${INPUT}$f\n"
+		done
+		RANDIN="$NUM1 $NUM2 $NUM3"
+		;;
+	*)
+		INPUT=""
+		RANDIN=""
+		;;
+	esac
+
+	echo -e "$INPUT" | simulate "$asm" rstest
+	echo -e "$INPUT" | simulate out rsout
+	diff rstest rsout > /dev/null
+	status $? "$t" "$RANDIN"
+done
+
+if [[ $TYPECHECK -eq 1 ]]; then
+	for t in tests/type_error/*.uC; do
+		mesg=$(./runme "$t" out 2>&1 >/dev/null)
+		if [[ $? -eq 7 ]] && [[ "$mesg" = "TYPE ERROR" ]]; then
+			status 0 "$t"
+		else
+			status 1 "$t"
+		fi
+	done
+fi
+
+echo "${BOLD}NOTE: tests 1, 3, 4, and 5 take arbitrary input."
+echo "This script just picks random numbers.  You should test these"
+echo "more yourself!"
+echo -n "$RESET"
+
+if [[ $TYPECHECK -ne 1 ]]; then
+	echo "${BOLD}NOTE: to include type check tests, run with"
+	echo "'./testall typecheck'"
+	echo "${BOLD}NOTE: type check tests are REQUIRED for 573 students."
+	echo "Please do make sure you pass all them if you are in 573!"
+fi
+echo -n "$RESET"

@@ -1,0 +1,42 @@
+#! /bin/bash
+
+if [[ "$RISCSIM" = "" ]]; then
+	RISCSIM=~/RiscSim/driver.py
+fi
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+BOLD="$(tput bold)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-20s [%s%s%s]  %s%s%s\n' "$2" "$COLOR" "$MESG" "$RESET" "$BOLD" "$3" "$RESET"
+}
+
+echo -e "${BOLD}Test                 Status  Input${RESET}"
+for t in tests/*.uC; do
+	./runme "$t" out
+	asm=$(echo "$t" | sed -E 's|tests/(.*)\.uC|outputs/\1\.asm|')
+	if [[ "$(echo "$t" | egrep -o 'test(8|10)')" != "" ]] ; then
+		NUM=$(($RANDOM % 100))
+		echo -e "$NUM\n" | python3 "$RISCSIM" "$asm" | head -n -1 > rstest
+		echo -e "$NUM\n" | python3 "$RISCSIM" out | head -n -1 > rsout
+	else
+		NUM=""
+		python3 "$RISCSIM" "$asm" | head -n -1 > rstest
+		python3 "$RISCSIM" out | head -n -1 > rsout
+	fi
+	diff rstest rsout > /dev/null
+	status $? "$t" "$NUM"
+done
+
+echo "${BOLD}NOTE: tests 8 and 10 take arbitrary input.  This script"
+echo "just picks random numbers.  You should test these more yourself!"
+echo -n "$RESET"

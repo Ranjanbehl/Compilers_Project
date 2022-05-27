@@ -1,0 +1,108 @@
+#! /bin/bash
+
+REGS=32
+if [[ $1 != "" ]]; then
+	if [[ $1 -ge 8 ]]; then
+		REGS=$1
+	else
+		echo "ERROR: must support at least 8 registers"
+		exit 1
+	fi
+fi
+
+if [[ "$RISCSIM" = "" ]]; then
+	RISCSIM=~/RiscSim/driver.py
+fi
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+BOLD="$(tput bold)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-28s [%s%s%s]  %s%s%s\n' "$2" "$COLOR" "$MESG" "$RESET" "$BOLD" "$3" "$RESET"
+}
+
+function simulate {
+	python3 "$RISCSIM" "$1" "$REGS" 2>/dev/null | head -n -1 > "$2"
+}
+
+function randint {
+	if [[ "$1" = "" ]]; then
+		echo "$((RANDOM % 100))"
+	else
+		echo "$((RANDOM % $1))"
+	fi
+}
+
+function randfloat {
+	echo "$((RANDOM % 100)).$((RANDOM % 100))"
+}
+
+function expected {
+	echo "$t" | sed -E 's_tests/(basic|funcs|control-flow)/(.*)\.uC_outputs/\1/\2\.asm_'
+}
+
+printf "%sTest %-23s Status  Input%s\n" "$BOLD" "" "$RESET"
+for t in tests/basic/*.uC tests/funcs/*.uC tests/control-flow/*.uC; do
+	./runme "$t" out "$REGS"
+	asm=$(expected "$t")
+	case "$(echo "$t" | egrep -o '(basic|funcs|control-flow)/test[0-9]+')" in
+	"basic/test8" | "funcs/test3" | "control-flow/test2" | "control-flow/test6")
+		num=$(randint 20)
+		input="$num\n"
+		randin="$num"
+		;;
+	"basic/test10")
+		num=$(randfloat)
+		input="$num\n"
+		randin="$num"
+		;;
+	"funcs/test1" | "control-flow/test7" | "control-flow/test8")
+		num1=$(randint)
+		num2=$(($(randint) + 1))
+		input="$num1\n$num2\n"
+		randin="$num1 $num2"
+		;;
+	"funcs/test4" | "funcs/test5")
+		num1=$(randfloat)
+		num2=$(randint 7)
+		num3=""
+		input="$num1\n$num2\n"
+		for i in $(seq 0 1 $num2); do
+			f=$(randfloat)
+			num3="${num3}$f "
+			input="${input}$f\n"
+		done
+		randin="$num1 $num2 $num3"
+		;;
+	"control-flow/test3")
+		num1=$(randint)
+		num2=$(randint)
+		num3=$(randint)
+		input="$num1\n$num2\n$num3\n"
+		randin="$num1 $num2 $num3"
+		;;
+	*)
+		input=""
+		randin=""
+		;;
+	esac
+
+	echo -e "$input" | simulate "$asm" rstest
+	echo -e "$input" | simulate out rsout
+	diff rstest rsout > /dev/null
+	status $? "$t" "$randin"
+done
+
+echo "${BOLD}NOTE: many tests take arbitrary input."
+echo "This script just picks random numbers.  You should test these"
+echo "more yourself!"
+echo -n "$RESET"

@@ -1,0 +1,76 @@
+#! /bin/bash
+
+if [[ "$RISCSIM" = "" ]]; then
+	RISCSIM=~/RiscSim/driver.py
+fi
+
+if [[ "$1" != "1" ]] && [[ "$1" != "2" ]]; then
+	echo "Argument required: option number (1 or 2)"
+	exit 1
+fi
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+RESET="$(tput sgr0)"
+BOLD="$(tput bold)"
+
+function status {
+	COLOR="$GREEN"
+	MESG="PASS"
+	if [[ $1 -ne 0 ]]; then
+		COLOR="$RED"
+		MESG="FAIL"
+	fi
+
+	printf '%-28s [%s%s%s]  %s%s%s\n' "$2" "$COLOR" "$MESG" "$RESET" "$BOLD" "$3" "$RESET"
+}
+
+function simulate {
+	python3 "$RISCSIM" "$1" "$REGS" 2>/dev/null | head -n -1 > "$2"
+}
+
+function randint {
+	if [[ "$1" = "" ]]; then
+		echo "$((RANDOM % 100))"
+	else
+		echo "$((RANDOM % $1))"
+	fi
+}
+
+function randfloat {
+	echo "$((RANDOM % 100)).$((RANDOM % 100))"
+}
+
+function expected {
+	echo "$t" | sed -E 's_tests/(.*)\.uC_outputs/\1\.asm_'
+}
+
+printf "%sTest %-23s Status  Input%s\n" "$BOLD" "" "$RESET"
+for t in tests/option$1/*.uC; do
+	./runme "$t" out "$REGS"
+	asm=$(expected "$t")
+	case "$(echo "$t" | egrep -o 'option[12]/test[0-9]+')" in
+	"option2/test4")
+		num1=$(randint)
+		num2=$(($(randint) + 1))  # make sure this isn't 0
+		input="$num1\n$num2\n"
+		randin="$num1 $num2"
+		;;
+	*)
+		input=""
+		randin=""
+		;;
+	esac
+
+	echo -e "$input" | simulate "$asm" rstest
+	echo -e "$input" | simulate out rsout
+	diff rstest rsout > /dev/null
+	status $? "$t" "$randin"
+done
+
+if [[  $1 = "2" ]]; then
+	echo "${BOLD}NOTE: option 2 test 4 takes arbitrary input.  This"
+	echo "script just picks random numbers.  You should test this"
+	echo "more yourself!"
+	echo -n "$RESET"
+fi
