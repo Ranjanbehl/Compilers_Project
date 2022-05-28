@@ -8,4 +8,4 @@ Step 5: Register Allocation(Incomplete)
 Step 6: Pointers and Arrays
 Step 7: Type Conversions
 
-The Compiler was wrriten in Java 8 for the MicroC language. Tested on RISC-V archiecture.
+The Compiler was written in Java 8 for the MicroC language. Tested on RISC-V architecture.
